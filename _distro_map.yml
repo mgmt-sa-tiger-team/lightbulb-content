@@ -1,0 +1,55 @@
+---
+cloudforms-modules:
+  name: CloudForms hands-on modules
+  author: Documentation Project <oatakan@redhat.com>
+  site: lightbulb
+  site_name: Modules
+  site_url: http://rhdemo.io/
+  branches:
+    master:
+      name: latest
+      dir: latest
+
+ansible-tower-modules:
+  name: Ansible Tower hands-on modules
+  author: Documentation Project <oatakan@redhat.com>
+  site: lightbulb
+  site_name: Modules
+  site_url: http://rhdemo.io/
+  branches:
+    master:
+      name: latest
+      dir: latest
+
+cloudforms-tower-workshop:
+  name: IT Automation and Governance with Ansible Tower and CloudForms
+  author: Documentation Project <oatakan@redhat.com>
+  site: lightbulb
+  site_name: Workshops
+  site_url: http://rhdemo.io/
+  branches:
+    master:
+      name: latest
+      dir: latest
+
+ansible-tower-workshop:
+  name: Ansible Tower Workshop
+  author: Documentation Project <oatakan@redhat.com>
+  site: lightbulb
+  site_name: Workshops
+  site_url: http://rhdemo.io/
+  branches:
+    master:
+      name: latest
+      dir: latest
+
+ansible-windows-workshop:
+  name: Ansible Windows Workshop
+  author: Documentation Project <oatakan@redhat.com>
+  site: lightbulb
+  site_name: Workshops
+  site_url: http://rhdemo.io/
+  branches:
+    master:
+      name: latest
+      dir: latest
