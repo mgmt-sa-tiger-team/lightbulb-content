@@ -1,0 +1,11 @@
+
+:icons: font
+
+include::exercise1.0.adoc[]
+include::exercise1.1.adoc[]
+include::exercise1.2.adoc[]
+include::exercise1.3.adoc[]
+include::exercise1.4.adoc[]
+include::exercise1.5.adoc[]
+
+

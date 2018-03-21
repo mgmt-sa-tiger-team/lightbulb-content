@@ -1,0 +1,5 @@
+
+:icons: font
+
+include::exercise3.0.adoc[]
+

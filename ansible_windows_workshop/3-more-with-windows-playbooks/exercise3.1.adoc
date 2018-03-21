@@ -1,0 +1,202 @@
+
+:icons: font
+:imagesdir: images
+
+:ansible_win_dsc_url: http://docs.ansible.com/ansible/devel/user_guide/windows_dsc.html
+:win_dsc_module_url: http://docs.ansible.com/ansible/latest/win_dsc_module.html
+:dsc_resource: https://github.com/PowerShell/DscResources
+:dsc_xwebadministration: https://github.com/PowerShell/xWebAdministration
+:dsc_xfirewall: https://github.com/PowerShell/xNetworking
+
+= Exercise 3.1 - Using Ansible for Desired State Config
+
+By using Desired State Config, you can further simplify your playbooks.
+
+For a full understanding of Desired State Config with Ansible: +
+link:{ansible_win_dsc_url}[Ansible win_dsc documentation] +
+link:{win_dsc_module_url}[win_dsc Module] +
+You can see list of DSC resources and examples that can be used in conjunction with Ansible win_dsc module: +
+link:{dsc_resource}[DSC Resources]
+
+In this exercise you will install IIS using win_dsc modules.
+
+== Creating a new Playbook
+
+=== Step 1:
+
+Within Visual Studio Code, create a new directory in your git repo and create a site.yml file.
+
+In the Explorer accordion you should have a 'student#-playbooks' section.
+
+Create a folder called *iis_dsc* and a file called *install_iis_with_dsc.yml*.
+
+Hover over the *student#-playbooks* section and click the *New Folder* button.
+
+Type *iis_dsc* and press enter.  Then click that folder so it is selected.
+
+Hover over the *student#-playbooks* section again and click the *New File* button.
+
+Type *install_iis_with_dsc.yml* and press enter.
+
+You should now have an editor open in the right pane that can be used for creating your playbook.
+
+=== Step 2:
+
+Add a play to your playbook. You will re-write iis installation playbook using dsc modules:
+[source,bash]
+----
+---
+- hosts: windows
+  name: This is a play within a playbook
+  vars:
+    iis_sites:
+      - name: Ansible Playbook Test 3
+        port: 8082
+        path: C:\sites\playbooktest3
+      - name: Ansible Playbook Test 4
+        port: 8083
+        path: C:\sites\playbooktest4
+    iis_test_message: "Hello World!  My test IIS Server"
+
+  tasks:
+    - name: Install required DSC modules
+      win_psmodule:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - xWebAdministration
+        - xNetworking
+
+    - name: Install IIS
+      win_dsc:
+        resource_name: windowsfeature
+        name: Web-Server
+
+    - name: Create site directory structure
+      win_dsc:
+        resource_name: file
+        ensure: Present
+        type: Directory
+        destinationpath: "{{ item.path }}"
+      with_items: "{{ iis_sites }}"
+
+    - name: Create IIS site
+      win_dsc:
+        resource_name: xWebsite
+        ensure: Present
+        name: "{{ item.name }}"
+        bindinginfo:
+          port: "{{ item.port }}"
+        state: started
+        physicalpath: "{{ item.path }}"
+        dependson: "[WindowsFeature]IIS"
+      with_items: "{{ iis_sites }}"
+      notify: restart iis service
+
+    - name: Open port for site on the firewall
+      win_dsc:
+        resource_name: xFirewall
+        ensure: Present
+        name: "iisport{{ item.port }}"
+        enabled: True
+        localport: "{{ item.port }}"
+        action: Allow
+        direction: Inbound
+        protocol: TCP
+      with_items: "{{ iis_sites }}"
+      notify: restart iis service
+
+    - name: Template simple web site to iis_site_path as index.html
+      win_template:
+        src: 'index.html.j2'
+        dest: '{{ item.path }}\index.html'
+      with_items: "{{ iis_sites }}"
+
+  handlers:
+    - name: restart iis service
+      win_dsc:
+        resource_name: service
+        name: W3Svc
+        state: restarted
+        startuptype: auto
+----
+
+Review the following DSC modules pages:
+
+link:{dsc_xwebadministration}[xWebAdministration PowerShell DSC Module] +
+link:{dsc_xnetworking}[xNetworking PowerShell DSC Module]
+
+*xWebAdministration* module contains *xWebsite* resource +
+*xNetworking* module contains *xFirewall* resource
+
+
+=== Step 3: Commit and Review
+
+Your new, improved playbook is done! But remember we still need to commit the changes to source code control.
+
+Click *File -> Save All* to save the files you've written
+
+Click on the Source Code icon, type in a commit message such as *Adding a new playbook*, and click the check box above.
+
+
+Sync to gitlab by clicking the arrows on the lower left blue bar.  When prompted, click *OK* to push and pull commits.
+
+It should take 20-30 seconds to finish the commit.  The blue bar should stop rotating and indicate 0 problems...
+
+== Running your playbook from Tower
+
+=== Step 1:
+
+In order for Tower to pick up the latest playbook addition into source control repository, you need to resync the project. Navigate to *PROJECTS* and click the resync icon next to
+
+image::3.1-tower-resync_project.png[title="Resync Project"]
+
+Wait for the green circle to finish bouncing next to project name. You can also check the *LAST UPDATED* column to verify.
+
+=== Step 2:
+
+Create a new job template in tower and add install_iis_with_dsc playbook.
+
+image::3.2-tower-add_install_iis_with_dsc_template.png[title="Add Apply Windows Patches template"]
+
+=== Step 3:
+
+Run the playbook from Tower and review the results.
+
+In the execution output on the right, review the *Show missing updates* task:
+
+image::3.1-tower-windows_patching_missing_updates_task.png[title="Show missing updates task"]
+
+[NOTE]
+Installation of the updates may take a while. You can come back and review the results later.
+
+=== Step 4:
+
+Note that it ran through one node at a time before starting on the other one. Is this what you expected?
+
+Review the playbook:
+
+[source,bash]
+----
+---
+- hosts: windows
+  serial:
+   - 25%
+  max_fail_percentage: 25%
+----
+
+Note that playbook is set to run in serial mode with 25% of the nodes in the inventory.
+
+
+=== Step 5:
+
+Re-run the job template and review the results. Notice it took a very short time to validate the end-state.
+
+
+TODO
+
+
+
+
+
+

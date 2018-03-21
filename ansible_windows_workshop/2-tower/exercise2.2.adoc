@@ -1,0 +1,56 @@
+:icons: font
+:imagesdir: images
+
+
+= Exercise 2.2 - Ad-hoc commands in Tower
+
+In this exercise, you will run ad-hoc modules from Tower.
+
+== Run setup module on windows nodes
+
+
+=== Step 1:
+
+In Tower UI, click *INVENTORIES*
+
+=== Step 2:
+
+Click *Ansible Workshop Inventory*.
+
+image::2.2-tower-inventory_select_ansible_workshop_inventory.png[title="Select Ansible Workshop Inventory",width=1000]
+
+=== Step 3:
+
+Click *GROUPS*.
+
+image::2.2-tower-inventory_select_groups.png[title="Select GROUPS",width=1000]
+
+=== Step 4:
+
+Select the check box next to *windows* and click *RUN COMMANDS*.
+
+image::2.2-tower-inventory_select_windows_group_run_command.png[title="Select windows group",width=1000]
+
+=== Step 5:
+
+Select the following values and click *LAUNCH*:
+
+|===
+|Module|win_ping
+|Machine Credential|Ansible Workshop Credentials
+|===
+
+image::2.2-tower-inventory_run_ad_hoc_win_ping.png[title="Run command",width=1000]
+
+=== Step 6:
+
+Review the results:
+
+image::2.2-tower-inventory_run_command_result.png[title="Run command result",width=1000]
+
+== End Result
+
+In this section, you ran a module against your inventory. This could be useful when you need to run quick actions on target systems.
+
+
+

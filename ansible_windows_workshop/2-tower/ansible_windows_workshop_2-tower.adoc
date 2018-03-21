@@ -1,0 +1,8 @@
+
+:icons: font
+
+include::exercise2.0.adoc[]
+include::exercise2.1.adoc[]
+include::exercise2.2.adoc[]
+include::exercise2.3.adoc[]
+

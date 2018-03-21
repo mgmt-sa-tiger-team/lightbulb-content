@@ -1,0 +1,139 @@
+
+:icons: font
+:imagesdir: images
+
+
+
+= Exercise 3.0 - Windows Patching with Ansible
+
+Patching windows systems can be a very time consuming task, but working with ansible you could reduce this time significantly.
+
+In this exercise, you will update your windows nodes.
+
+== Creating a new Playbook
+
+=== Step 1:
+
+Within Visual Studio Code, create a new directory in your git repo and create a site.yml file.
+
+In the Explorer accordion you should have a 'student#-playbooks' section.
+
+Create a folder called *windows_patching* and a file called *patch_windows.yml*.
+
+Hover over the *student#-playbooks* section and click the *New Folder* button.
+
+Type *windows_patching* and press enter.  Then click that folder so it is selected.
+
+Hover over the *student#-playbooks* section again and click the *New File* button.
+
+Type *patch_windows.yml* and press enter.
+
+You should now have an editor open in the right pane that can be used for creating your playbook.
+
+
+=== Step 2:
+
+Add a play to your playbook.  These include defining serial parameter which executes the playbook in stages to it doesn't try patch all systems all at once.
+
+[source,bash]
+----
+---
+- hosts: windows
+  serial:
+   - 25%
+  max_fail_percentage: 25%
+  vars:
+    win_updates_categories:
+      - CriticalUpdates
+      - SecurityUpdates
+  tasks:
+  - name: Check for missing updates
+    win_updates:
+      state: searched
+      category_names: "{{ win_updates_categories }}"
+    register: search_updates
+
+  - name: Show missing updates
+    debug:
+      var: search_updates
+
+  - name: Install missing updates.
+    win_updates:
+      category_names: "{{ win_updates_categories }}"
+    register: apply_updates
+
+  - name: Reboot if needed
+    win_reboot:
+      reboot_timeout: 3600
+    when: apply_updates.reboot_required
+----
+
+=== Step 3: Commit and Review
+
+Your new, improved playbook is done! But remember we still need to commit the changes to source code control.
+
+Click *File -> Save All* to save the files you've written
+
+Click on the Source Code icon, type in a commit message such as *Adding a new playbook*, and click the check box above.
+
+
+Sync to gitlab by clicking the arrows on the lower left blue bar.  When prompted, click *OK* to push and pull commits.
+
+It should take 20-30 seconds to finish the commit.  The blue bar should stop rotating and indicate 0 problems...
+
+== Running your playbook from Tower
+
+=== Step 1:
+
+In order for Tower to pick up the latest playbook addition into source control repository, you need to resync the project. Navigate to *PROJECTS* and click the resync icon next to
+
+image::3.1-tower-resync_project.png[title="Resync Project"]
+
+Wait for the green circle to finish bouncing next to project name. You can also check the *LAST UPDATED* column to verify.
+
+=== Step 2:
+
+Create a new job template in tower and add patch_windows playbook.
+
+image::3.1-tower-add_windows_patching_template.png[title="Add Apply Windows Patches template"]
+
+=== Step 3:
+
+Run the playbook from Tower and review the results.
+
+In the execution output on the right, review the *Show missing updates* task:
+
+image::3.1-tower-windows_patching_missing_updates_task.png[title="Show missing updates task"]
+
+[NOTE]
+Installation of the updates may take a while. You can come back and review the results later.
+
+=== Step 4:
+
+Note that it ran through one node at a time before starting on the other one. Is this what you expected?
+
+Review the playbook:
+
+[source,bash]
+----
+---
+- hosts: windows
+  serial:
+   - 25%
+  max_fail_percentage: 25%
+----
+
+Note that playbook is set to run in serial mode with 25% of the nodes in the inventory.
+
+
+=== Step 5:
+
+Re-run the job template and review the results. Notice it took a very short time to validate the end-state.
+
+
+=== End Result
+
+After running the playbook from Tower, it will update your nodes with the latest patches.
+
+
+
